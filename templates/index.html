@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistem Perhitungan Tagihan Listrik PLN Berdasarkan Golongan">
+    <title>Sistem Tagihan Listrik PLN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="header-icon">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="18" stroke="url(#grad1)" stroke-width="2.5" fill="none"/>
+                    <path d="M22 10L14 22h6l-2 8 8-12h-6l2-8z" fill="url(#grad1)"/>
+                    <defs><linearGradient id="grad1" x1="0" y1="0" x2="40" y2="40"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient></defs>
+                </svg>
+            </div>
+            <h1>Sistem Tagihan Listrik PLN</h1>
+            <p class="subtitle">Perhitungan otomatis 13 golongan tarif resmi PLN — <strong>Abstraksi</strong> & <strong>Polimorfisme</strong></p>
+        </header>
+
+        <div class="main-grid">
+            <!-- FORM -->
+            <section class="card form-card">
+                <div class="card-header"><h2><span class="card-icon">📋</span> Data Pelanggan</h2></div>
+                <form id="billingForm" autocomplete="off">
+                    <!-- Golongan tabs -->
+                    <div class="form-group">
+                        <label>Golongan Pelanggan</label>
+                        <div class="golongan-tabs" id="golonganTabs">
+                            <button type="button" class="tab active" data-value="rumah_tangga"><span class="tab-icon">🏠</span><span class="tab-label">Rumah Tangga</span></button>
+                            <button type="button" class="tab" data-value="bisnis"><span class="tab-icon">🏢</span><span class="tab-label">Bisnis</span></button>
+                            <button type="button" class="tab" data-value="industri"><span class="tab-icon">🏭</span><span class="tab-label">Industri</span></button>
+                            <button type="button" class="tab" data-value="pemerintah"><span class="tab-icon">🏛️</span><span class="tab-label">Pemerintah</span></button>
+                            <button type="button" class="tab" data-value="multiguna"><span class="tab-icon">💡</span><span class="tab-label">Multiguna</span></button>
+                        </div>
+                        <input type="hidden" id="golongan" value="rumah_tangga">
+                    </div>
+
+                    <!-- Sub-golongan for Pemerintah -->
+                    <div class="form-group conditional-field" id="field_sub_gol" style="display:none">
+                        <label for="sub_golongan">Sub Golongan</label>
+                        <select id="sub_golongan">
+                            <option value="P-1">P-1/TR (6.600 VA s.d. 200 kVA)</option>
+                            <option value="P-2">P-2/TM (di atas 200 kVA)</option>
+                            <option value="P-3">P-3/TR (Umum)</option>
+                        </select>
+                    </div>
+
+                    <!-- Basic fields -->
+                    <div class="form-row">
+                        <div class="form-group"><label for="id_pelanggan">ID Pelanggan</label><input type="text" id="id_pelanggan" placeholder="Contoh: R001" required></div>
+                        <div class="form-group"><label for="nama">Nama Pelanggan</label><input type="text" id="nama" placeholder="Contoh: Budi Santoso" required></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"><label for="daya_terpasang">Daya Terpasang</label><select id="daya_terpasang" required></select></div>
+                        <div class="form-group"><label for="hari_terlambat">Hari Terlambat</label><input type="number" id="hari_terlambat" placeholder="0" min="0" value="0"></div>
+                    </div>
+
+                    <!-- Simple kWh (for reguler) -->
+                    <div class="form-group" id="field_kwh">
+                        <label for="pemakaian_kwh">Pemakaian (kWh)</label>
+                        <input type="number" id="pemakaian_kwh" placeholder="0" min="0" step="0.01" required>
+                    </div>
+
+                    <!-- WBP/LWBP fields -->
+                    <div class="conditional-field" id="field_wbp" style="display:none">
+                        <div class="form-divider"><span>Pemakaian WBP / LWBP</span></div>
+                        <div class="form-row">
+                            <div class="form-group"><label for="kwh_wbp">kWh WBP (Beban Puncak)</label><input type="number" id="kwh_wbp" placeholder="0" min="0" step="0.01" value="0"></div>
+                            <div class="form-group"><label for="kwh_lwbp">kWh LWBP (Luar Puncak)</label><input type="number" id="kwh_lwbp" placeholder="0" min="0" step="0.01" value="0"></div>
+                        </div>
+                    </div>
+
+                    <!-- Faktor K -->
+                    <div class="form-group conditional-field" id="field_k" style="display:none">
+                        <label for="faktor_k">Faktor K (1.4 – 2.0)</label>
+                        <input type="number" id="faktor_k" min="1.4" max="2.0" step="0.1" value="1.4">
+                        <div class="info-box"><span class="info-icon">📊</span><span>K = rasio harga WBP/LWBP, ditetapkan PLN setempat</span></div>
+                    </div>
+
+                    <!-- Faktor N (Multiguna) -->
+                    <div class="form-group conditional-field" id="field_n" style="display:none">
+                        <label for="faktor_n">Faktor N</label>
+                        <input type="number" id="faktor_n" min="0" step="0.01" value="1.0">
+                        <div class="info-box"><span class="info-icon">📊</span><span>N = faktor pengali tarif multiguna, ditetapkan PLN</span></div>
+                    </div>
+
+                    <!-- kVArh + Power Factor -->
+                    <div class="conditional-field" id="field_kvarh" style="display:none">
+                        <div class="form-divider"><span>Daya Reaktif (kVArh)</span></div>
+                        <div class="form-row">
+                            <div class="form-group"><label for="kvarh_terukur">kVArh Terukur</label><input type="number" id="kvarh_terukur" placeholder="0" min="0" step="0.01" value="0"></div>
+                            <div class="form-group"><label for="power_factor">Power Factor (cos φ)</label><input type="number" id="power_factor" min="0" max="1" step="0.01" value="0.85"></div>
+                        </div>
+                        <div class="info-box"><span class="info-icon">⚡</span><span>Denda kVArh berlaku jika PF rata-rata &lt; <strong>0,85</strong></span></div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="btnSubmit">
+                        <span class="btn-text">Hitung Tagihan</span>
+                        <span class="btn-loader" style="display:none"></span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- RESULT -->
+            <section class="card result-card" id="resultCard">
+                <div class="card-header"><h2><span class="card-icon">🧾</span> Struk Tagihan</h2></div>
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon"><svg width="80" height="80" viewBox="0 0 80 80" fill="none"><rect x="15" y="10" width="50" height="60" rx="4" stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/><line x1="25" y1="25" x2="55" y2="25" stroke="currentColor" stroke-width="2" opacity="0.2"/><line x1="25" y1="33" x2="55" y2="33" stroke="currentColor" stroke-width="2" opacity="0.2"/><line x1="25" y1="41" x2="45" y2="41" stroke="currentColor" stroke-width="2" opacity="0.2"/></svg></div>
+                    <p>Masukkan data dan klik <strong>Hitung Tagihan</strong></p>
+                </div>
+                <div class="struk" id="struk" style="display:none">
+                    <div class="struk-header">
+                        <div class="struk-logo">⚡ PLN</div>
+                        <div class="struk-title">STRUK TAGIHAN LISTRIK</div>
+                        <div class="struk-golongan" id="strukGolongan"></div>
+                    </div>
+                    <div class="struk-divider"></div>
+                    <div class="struk-section" id="strukInfo"></div>
+                    <div class="struk-divider"></div>
+                    <div class="struk-section" id="strukBiaya"></div>
+                    <div class="struk-divider"></div>
+                    <div class="struk-section" id="strukDenda"></div>
+                    <div class="struk-divider struk-divider-bold"></div>
+                    <div class="struk-total">
+                        <span class="struk-total-label">GRAND TOTAL</span>
+                        <span class="struk-total-value" id="sGrandTotal"></span>
+                    </div>
+                    <div class="struk-footer">
+                        <p>Terima kasih atas pembayaran Anda</p>
+                        <p class="struk-timestamp" id="sTimestamp"></p>
+                    </div>
+                </div>
+                <div class="error-state" id="errorState" style="display:none">
+                    <span class="error-icon">⚠️</span><p id="errorMessage"></p>
+                </div>
+            </section>
+        </div>
+
+        <footer class="footer">
+            <p>Tugas PKBO — Abstraksi & Polimorfisme | Data Tarif Resmi PLN</p>
+            <p class="footer-sub">Python + Flask + HTML/CSS/JS</p>
+        </footer>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
